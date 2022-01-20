@@ -1,20 +1,20 @@
-import {DECREMENT, INCREMENT} from '../const/counter.const'
+import { SHOW_MODAL, HIDE_MODAL } from '../const/modal.const'
 
 const initialState = {
-    count: 0
+    show: false
 }
 
 export default (state = initialState, action) => {
     switch (action.type) {
-        case INCREMENT:
+        case SHOW_MODAL:
             return {
                 ...state,
-                count: state.count + action.payload
+                show: true
             }
-        case DECREMENT:
+        case HIDE_MODAL:
             return {
                 ...state,
-                count: state.count - action.payload
+                show: false
             }
         default:
             return state

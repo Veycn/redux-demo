@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Counter from "./components/counter";
-
+import App from './App'
 import { Provider } from 'react-redux'
 import { store } from './store/index'
 
@@ -9,7 +8,7 @@ import { store } from './store/index'
 ReactDOM.render(
     <React.StrictMode>
         <Provider store={store}>
-            <Counter count={store.getState().count}/>
+            <App />
         </Provider>
     </React.StrictMode>,
     document.getElementById('root')
