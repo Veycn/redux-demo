@@ -2,7 +2,12 @@
 `redux`  是一个 `JavaScript` 状态容器，提供可预测化的状态管理。
 ## 核心概念
 `redux` 中主要是四个核心概念，他们之间的关系如下：
-![image.png](https://cdn.nlark.com/yuque/0/2022/png/12895015/1642669927845-50f6253b-9d4d-401d-ace6-d579291158fc.png#clientId=uc57a4837-924a-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=233&id=uf9f4c9fd&margin=%5Bobject%20Object%5D&name=image.png&originHeight=466&originWidth=1144&originalType=binary&ratio=1&rotation=0&showTitle=false&size=107926&status=done&style=none&taskId=u8be494fc-abbb-4c60-859e-855a747254c&title=&width=572)
+![img.png](imgs/img_3.png)
+1. 组件通过 dispatch 方法触发 Action
+2. Store 接收 Action 并将 Action 分发给 Reducer
+3. Reducer 根据 Action 类型对状态进行更改并将更改后的状态返回给 Store 
+4. 组件订阅了Store中的状态，Store中的状态更新会同步到组件
+
 ### store
 存储状态的容器，是一个 `JavaScript` 对象。
 ### reducers
@@ -133,3 +138,121 @@ export default connect(mapStateToProps, mapDispatchToProps)(Counter)
 
 
 [Redux 文档](https://www.redux.org.cn/docs/recipes/reducers/PrerequisiteConcepts.html)
+
+
+## 中间件
+中间件允许我们扩展 redux 程序。在之前，action 被触发以后，会交给 reducer 处理状态的变更。加入了中间件之后的 redux 处理流程是这样的：
+
+![img.png](imgs/img_2.png)
+
+### 如何编写中间件
+
+Redux 中间件本质上是一个 `科里化的函数`。
+
+编写中间件需要注意当一个中间件的逻辑结束一定要调用 `next(action)` 
+
+```javascript
+// 中间件模板
+export default store => next => actions => {}
+
+// 按照模板，写一个 logger 中间件
+export default store => next => actions => {
+    // 中间件逻辑
+    console.log(store)
+    console.log(action)
+    // 最后调用 next，把 action 传递进去，执行下一个中间件或者交给 reducer
+    next(action)
+}
+```
+
+### 注册使用
+
+```javascript
+import {createStore, applyMiddleware} from "redux";
+
+import rootReducer from "./reducers/root.reducer";
+
+import Logger from './middleware/logger'
+import Test from "./middleware/test";
+
+export const store = createStore(rootReducer, applyMiddleware(Logger, Test))
+```
+
+中间件会按照注册的顺序依次执行。
+
+
+### redux-thunk
+
+```javascript
+export default (store) => next => action => {
+    // 只关心执行的是不是异步操作
+    // 同步操作 action 是一个对象
+    // 异步操作 action 则是一个 函数，把异步操作写在函数中，传递进来
+
+    if (typeof action === 'function'){
+        return action(store.dispatch)
+    }
+    next(action)
+}
+```
+这样就完成了一个可以进行异步操作的中间件。当 `action`  为同步事件的时候，
+传递过来一个 `action`  对象，此时在这个中间件不做任何处理，直接交给`next` 。
+如果是一个函数，则表示是一个异步操作，将 `dispatch`  的权限交给这个函数，
+然后等异步事件拿到结果之后，在这个函数中 `dispatch`  相关的修改状态的 `action` 。
+
+
+[redux-thunk 真就这么三四行代码](https://github.com/reduxjs/redux-thunk/blob/master/src/index.ts)
+
+usage: 
+```javascript
+const loadPost = () => async dispatch => {
+    const posts = await axios.get('/posts').then(res => res.data)
+    dispatch({type: 'LOAD_POSTS_SUCCESS', payload: posts})
+}
+```
+
+## redux-saga
+
+`redux-saga`  可以将异步操作从 `Action Creator` 文件中抽离出来，放在一个单独的文件中.
+
+### 使用
+```javascript
+// index.js  引入 saga
+import createSagaMiddleware from 'redux-saga'
+const sagaMiddleware = createSagaMiddleware()
+export const store = createStore(rootReducer, applyMiddleware(sagaMiddleware))
+
+// 启用 counterSaga
+import CounterSaga from "./sagas/counter.saga";
+sagaMiddlewar.run(CounterSaga)
+
+
+
+
+// counter.saga.js 为 counter 组件定义 saga 异步行为
+
+// takeEvery 接收 action
+// put 触发 action
+import {delay, put, takeEvery} from 'redux-saga/effects'
+import {increment} from "../actions/counter.action";
+import {INCREMENT_ASYNC} from "../const/counter.const";
+
+// 异步函数，模拟异步操作
+function* increment_async_fn(action) {
+    // 延迟两秒， saga 中不支持 setTimeout
+    yield delay(2000)
+    // 执行同步 action
+    yield put(increment(action.payload))
+}
+
+// saga 要求导出一个 generator 函数， 在 index.js 中使用
+export default function* CounterSaga() {
+    /**
+     * @string action 类型字符串
+     * @function 异步操作函数
+     */
+    yield takeEvery(INCREMENT_ASYNC, increment_async_fn)
+}
+
+
+```
