@@ -1,4 +1,4 @@
-import {DECREMENT, INCREMENT} from '../const/counter'
+import {DECREMENT, INCREMENT} from '../const/counter.const'
 
 const initialState = {
     count: 0
