@@ -2,7 +2,7 @@
 `redux`  是一个 `JavaScript` 状态容器，提供可预测化的状态管理。
 ## 核心概念
 `redux` 中主要是四个核心概念，他们之间的关系如下：
-![img.png](imgs/img_3.png)
+![img.png](/imgs/img_3.png)
 1. 组件通过 dispatch 方法触发 Action
 2. Store 接收 Action 并将 Action 分发给 Reducer
 3. Reducer 根据 Action 类型对状态进行更改并将更改后的状态返回给 Store 
