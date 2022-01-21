@@ -90,6 +90,7 @@ store.subscribe(() => {
 ![img.png](./imgs/img.png)
 
 使用Redux管理数据，由于Store独立于组件，使得数据管理独立于组件，解决了组件与组件之间传递数据困难的问题。
+
 ![img_1.png](./imgs/img_1.png)
 
 
@@ -255,4 +256,29 @@ export default function* CounterSaga() {
 }
 
 
+```
+
+### 文件拆分与合并
+```javascript
+// root.saga.js
+import {all} from 'redux-saga/effects'
+import CounterSaga from "./counter.saga";
+import ModalSaga from "./modal.saga";
+
+export default function* rootSaga() {
+    yield all([
+        CounterSaga(),
+        ModalSaga()
+    ])
+}
+
+// index.js
+
+import createSagaMiddleware from 'redux-saga'
+import rootSaga from "./sagas/root.saga";
+
+const sagaMiddleware = createSagaMiddleware()
+export const store = createStore(rootReducer, applyMiddleware(sagaMiddleware))
+
+sagaMiddleware.run(rootSaga)
 ```

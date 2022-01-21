@@ -1,11 +1,12 @@
 import React from "react";
-import Counter from "./components/Counter";
-import Modal from "./components/Modal";
+import Cart from "./shopping/components/Cart";
+import Product from "./shopping/components/Product";
+import './shopping/css/styles.css'
 
 function App() {
     return <div>
-        <Counter/>
-        <Modal/>
+        <Product />
+        <Cart/>
     </div>
 }
 
